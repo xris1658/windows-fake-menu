@@ -346,7 +346,7 @@ void ColorPick_OnMouseMove(COLORPICKSTATE* pcps, HWND hwnd, int x, int y)
     ColorPick_ChangeSel(pcps, hwnd, iSel);
 }
 
-void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, int x, int y)
+void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, UINT msg, WPARAM wParam, int x, int y)
 {
     ColorPick_OnMouseMove(pcps, hwnd, x, y);
     if(x >= 0 && x < CXFAKEMENU &&
@@ -356,6 +356,27 @@ void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, int x, int y)
     }
     pcps->iResult = pcps->iSel;
     pcps->fDone = true;
+    HWND hwndOwner = GetParent(hwnd);
+    POINT point;
+    point.x = x;
+    point.y = y;
+    MapWindowPoints(hwnd, HWND_DESKTOP, &point, 1);
+    auto wParamMainWindow = SendMessageW(hwndOwner, WM_NCHITTEST, 0, MAKELPARAM(point.x, point.y));
+    if(wParamMainWindow == HTCLIENT || wParamMainWindow == HTVSCROLL || wParamMainWindow == HTHSCROLL)
+    {
+        MapWindowPoints(HWND_DESKTOP, hwndOwner, &point, 1);
+        PostMessageW(hwndOwner, msg, wParam, MAKELPARAM(point.x, point.y));
+    }
+    else
+    {
+        UINT msgMainWindow =
+            msg == WM_LBUTTONDOWN? WM_NCLBUTTONDOWN:
+            msg == WM_RBUTTONDOWN? WM_NCRBUTTONDOWN:
+            msg == WM_MBUTTONDOWN? WM_NCMBUTTONDOWN:
+            msg == WM_XBUTTONDOWN? WM_NCXBUTTONDOWN:
+        WM_NULL;
+        PostMessageW(hwndOwner, msgMainWindow, wParamMainWindow, MAKELPARAM(point.x, point.y));
+    }
 }
 
 //
@@ -450,20 +471,20 @@ LRESULT CALLBACK ColorPick_WndProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPARAM 
         return ColorPick_OnCreate(hwnd, (LPCREATESTRUCT)lParam);
 
     case WM_MOUSEMOVE:
-        ColorPick_OnMouseMove(pcps, hwnd, (short)LOWORD(lParam),
-            (short)HIWORD(lParam));
+        ColorPick_OnMouseMove(pcps, hwnd, GET_X_LPARAM(lParam),
+            GET_Y_LPARAM(lParam));
         break;
 
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
-        ColorPick_OnButtonDown(pcps, hwnd, (short)LOWORD(lParam),
-            (short)HIWORD(lParam));
-        break;
+        ColorPick_OnButtonDown(pcps, hwnd, uiMsg, wParam, GET_X_LPARAM(lParam),
+            GET_Y_LPARAM(lParam));
+        return 0;
 
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
-        ColorPick_OnButtonUp(pcps, hwnd, (short)LOWORD(lParam),
-            (short)HIWORD(lParam));
+        ColorPick_OnButtonUp(pcps, hwnd, GET_X_LPARAM(lParam),
+            GET_Y_LPARAM(lParam));
         break;
 
     case WM_SYSKEYDOWN:
@@ -658,8 +679,8 @@ int ColorPick_Popup(HWND hwndOwner, int x, int y)
         case WM_MBUTTONDOWN:
         case WM_MBUTTONUP:
         case WM_MBUTTONDBLCLK:
-            pt.x = (short)LOWORD(msg.lParam);
-            pt.y = (short)HIWORD(msg.lParam);
+            pt.x = GET_X_LPARAM(msg.lParam);
+            pt.y = GET_Y_LPARAM(msg.lParam);
             MapWindowPoints(msg.hwnd, hwndPopup, &pt, 1);
             msg.lParam = MAKELPARAM(pt.x, pt.y);
             msg.hwnd = hwndPopup;
