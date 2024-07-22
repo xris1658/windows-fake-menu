@@ -375,6 +375,12 @@ void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, UINT msg, WPARAM wP
             msg == WM_MBUTTONDOWN? WM_NCMBUTTONDOWN:
             msg == WM_XBUTTONDOWN? WM_NCXBUTTONDOWN:
         WM_NULL;
+        // Workaround on high-DPI machines
+        // TODO: Add high-DPI support
+        if(point.y < 0 && wParamMainWindow == HTCAPTION)
+        {
+            point.y = 0;
+        }
         PostMessageW(hwndOwner, msgMainWindow, wParamMainWindow, MAKELPARAM(point.x, point.y));
     }
 }
@@ -839,7 +845,6 @@ LRESULT CALLBACK FakeMenuDemo_WndProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPAR
         PostQuitMessage(0);
         break;
     }
-
     return DefWindowProc(hwnd, uiMsg, wParam, lParam);
 }
 
