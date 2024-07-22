@@ -362,6 +362,7 @@ void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, UINT msg, WPARAM wP
     point.y = y;
     MapWindowPoints(hwnd, HWND_DESKTOP, &point, 1);
     auto wParamMainWindow = SendMessageW(hwndOwner, WM_NCHITTEST, 0, MAKELPARAM(point.x, point.y));
+    PostMessageW(hwndOwner, WM_SETCURSOR, reinterpret_cast<WPARAM>(hwndOwner)/* FIXME */, MAKELPARAM(wParamMainWindow, msg));
     if(wParamMainWindow == HTCLIENT || wParamMainWindow == HTVSCROLL || wParamMainWindow == HTHSCROLL)
     {
         MapWindowPoints(HWND_DESKTOP, hwndOwner, &point, 1);
