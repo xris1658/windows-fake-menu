@@ -356,7 +356,7 @@ void ColorPick_OnButtonDown(COLORPICKSTATE* pcps, HWND hwnd, UINT msg, WPARAM wP
     }
     pcps->iResult = pcps->iSel;
     pcps->fDone = true;
-    HWND hwndOwner = GetParent(hwnd);
+    HWND hwndOwner = pcps->hwndOwner;
     POINT point;
     point.x = x;
     point.y = y;
