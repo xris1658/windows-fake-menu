@@ -598,11 +598,8 @@ int ColorPick_Popup(HWND hwndOwner, int x, int y)
     ColorPickState_Initialize(&cps, hwndOwner);
 
     // Set up the style and extended style we want to use.
-    DWORD dwStyle = WS_POPUP | WS_BORDER;
-    DWORD dwExStyle = WS_EX_TOOLWINDOW |      // So it doesn't show up in taskbar
-        WS_EX_DLGMODALFRAME |   // Get the edges right
-        WS_EX_WINDOWEDGE |
-        WS_EX_TOPMOST;          // So it isn't obscured
+    DWORD dwStyle = WS_POPUP;
+    DWORD dwExStyle = WS_EX_TOOLWINDOW;
 
 // We want a client area of size (CXFAKEMENU, ARRAYSIZE(c_rgclrPredef) * CYCOLOR),
 // so use AdjustWindowRectEx to figure out what window rect will give us a
